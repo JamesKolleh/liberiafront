@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LiberiaFront — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface2: #1f1f1f;
+  --surface3: #272727;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8e8e8;
+  --text2: #888;
+  --text3: #555;
+  --red: #cc2200;
+  --red2: #ff3a1a;
+  --green: #00c06a;
+  --amber: #f0a000;
+  --blue: #3b8ef0;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:var(--sans)}
+input,textarea,select{font-family:var(--sans)}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:32px}
+#login-screen.hidden{display:none}
+.login-logo{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:12px}
+.login-logo span{background:var(--red);color:#fff;padding:4px 10px;border-radius:2px}
+.login-card{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:32px;width:100%;max-width:360px}
+.login-title{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin-bottom:7px}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);padding:10px 13px;font-size:14px;outline:none;transition:border-color 0.15s}
+.field input:focus{border-color:var(--red)}
+.login-btn{width:100%;background:var(--red);color:#fff;border:none;padding:12px;border-radius:4px;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px;transition:background 0.15s}
+.login-btn:hover{background:var(--red2)}
+.login-err{color:#ff6b6b;font-size:12px;font-family:var(--mono);margin-top:8px;display:none}
+
+/* ── SIDEBAR ── */
+#sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;z-index:50}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-logo-mark{background:var(--red);color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;padding:4px 8px;border-radius:2px}
+.sidebar-logo-text{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)}
+.sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.sidebar-section{padding:14px 10px 6px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 6px;border-radius:4px;font-size:13px;font-weight:400;color:var(--text2);cursor:pointer;transition:all 0.12s;border:1px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:0.7}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px}
+.sidebar-footer{margin-top:auto;padding:14px 12px;border-top:1px solid var(--border)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.sidebar-avatar{width:30px;height:30px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.sidebar-user-info{flex:1;min-width:0}
+.sidebar-user-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-role{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.logout-btn{background:none;border:none;color:var(--text3);font-size:18px;padding:2px 4px;transition:color 0.15s}
+.logout-btn:hover{color:var(--red2)}
+
+/* ── MAIN CONTENT ── */
+#main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:40}
+.topbar-title{font-family:var(--mono);font-size:15px;font-weight:600}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.topbar-time{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.btn{padding:8px 16px;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;border:1px solid var(--border2);background:transparent;color:var(--text);transition:all 0.12s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--surface2);border-color:var(--border2)}
+.btn-primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn-primary:hover{background:var(--red2);border-color:var(--red2)}
+.btn-sm{padding:5px 11px;font-size:10px}
+.btn-danger{border-color:rgba(204,34,0,0.4);color:var(--red2)}
+.btn-danger:hover{background:rgba(204,34,0,0.1)}
+.btn-success{border-color:rgba(0,192,106,0.4);color:var(--green)}
+.btn-success:hover{background:rgba(0,192,106,0.08)}
+.content{padding:24px 28px;flex:1}
+
+/* ── SECTION VISIBILITY ── */
+.section{display:none}
+.section.active{display:block}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.red::before{background:var(--red)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.amber::before{background:var(--amber)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-label{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.stat-value{font-family:var(--mono);font-size:28px;font-weight:600;line-height:1;margin-bottom:6px}
+.stat-delta{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.stat-delta.up{color:var(--green)}
+.stat-delta.down{color:var(--red2)}
+
+/* ── PANELS / TABLES ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:20px;overflow:hidden}
+.panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-title{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)}
+.panel-body{padding:0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:10px 18px;text-align:left;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);background:var(--surface2)}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+td{padding:11px 18px;vertical-align:middle}
+.td-mono{font-family:var(--mono);font-size:12px}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px}
+.status-pill.active{background:rgba(0,192,106,0.12);color:var(--green);border:1px solid rgba(0,192,106,0.25)}
+.status-pill.inactive{background:rgba(255,255,255,0.04);color:var(--text3);border:1px solid var(--border)}
+.status-pill.banned{background:rgba(204,34,0,0.1);color:var(--red2);border:1px solid rgba(204,34,0,0.25)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.avatar-cell{display:flex;align-items:center;gap:10px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;flex-shrink:0}
+.td-actions{display:flex;gap:6px;align-items:center}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:3px;color:var(--text2);padding:4px 7px;font-size:13px;transition:all 0.12s;cursor:pointer}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn.danger:hover{border-color:rgba(204,34,0,0.4);color:var(--red2);background:rgba(204,34,0,0.06)}
+
+/* ── SEARCH BAR ── */
+.search-wrap{position:relative;display:inline-flex;align-items:center}
+.search-wrap input{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);padding:7px 12px 7px 32px;font-size:13px;outline:none;width:220px;transition:border-color 0.15s}
+.search-wrap input:focus{border-color:var(--red)}
+.search-wrap svg{position:absolute;left:9px;pointer-events:none;opacity:0.4}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid.full{grid-template-columns:1fr}
+.form-field{display:flex;flex-direction:column;gap:6px}
+.form-field label{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.form-field input,.form-field select,.form-field textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);padding:9px 12px;font-size:13px;outline:none;transition:border-color 0.15s}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--red)}
+.form-field select option{background:var(--surface2)}
+.form-field textarea{resize:vertical;min-height:80px}
+.form-actions{display:flex;gap:10px;margin-top:8px}
+
+/* ── KEYWORD TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;padding:16px 18px}
+.kw-tag{display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:5px 11px;font-family:var(--mono);font-size:12px;font-weight:500}
+.kw-tag .cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.kw-tag .remove-tag{background:none;border:none;color:var(--text3);font-size:15px;line-height:1;cursor:pointer;transition:color 0.12s;padding:0 2px}
+.kw-tag .remove-tag:hover{color:var(--red2)}
+
+/* ── SOURCES ── */
+.source-row{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border)}
+.source-row:last-child{border-bottom:none}
+.source-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.source-info{flex:1}
+.source-name{font-size:13px;font-weight:500}
+.source-url{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:1px}
+.source-stats{font-family:var(--mono);font-size:11px;color:var(--text2);text-align:right}
+.toggle{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--surface3);border-radius:20px;transition:background 0.2s;cursor:pointer;border:1px solid var(--border2)}
+.toggle-slider::before{content:'';position:absolute;height:14px;width:14px;left:2px;top:2px;background:#888;border-radius:50%;transition:transform 0.2s,background 0.2s}
+.toggle input:checked+.toggle-slider{background:rgba(0,192,106,0.2);border-color:var(--green)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(16px);background:var(--green)}
+
+/* ── ACTIVITY FEED ── */
+.activity-item{display:flex;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);align-items:flex-start}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.activity-text{font-size:13px;line-height:1.5}
+.activity-time{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── CHART BARS ── */
+.chart-wrap{padding:18px 18px 10px;display:flex;flex-direction:column;gap:12px}
+.chart-row{display:flex;align-items:center;gap:12px;font-size:12px}
+.chart-label{font-family:var(--mono);font-size:11px;color:var(--text2);width:90px;flex-shrink:0;text-align:right}
+.chart-bar-wrap{flex:1;background:var(--surface3);border-radius:2px;height:8px;overflow:hidden}
+.chart-bar{height:100%;border-radius:2px;transition:width 0.8s cubic-bezier(0.25,1,0.5,1)}
+.chart-val{font-family:var(--mono);font-size:11px;color:var(--text2);width:50px;text-align:right}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;transition:color 0.12s}
+.modal-close:hover{color:var(--red2)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;padding:12px 18px;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);z-index:500;transform:translateY(80px);opacity:0;transition:all 0.25s;pointer-events:none;display:flex;align-items:center;gap:10px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success .toast-dot{background:var(--green)}
+.toast.error .toast-dot{background:var(--red2)}
+.toast-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── SETTINGS ── */
+.settings-group{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;overflow:hidden}
+.settings-group-title{padding:12px 18px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);background:var(--surface2)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-info .settings-row-label{font-size:13px;font-weight:500;margin-bottom:2px}
+.settings-row-info .settings-row-sub{font-size:12px;color:var(--text3);font-family:var(--mono)}
+.settings-input{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);padding:7px 11px;font-size:13px;outline:none;width:220px}
+.settings-input:focus{border-color:var(--red)}
+
+/* ── SOURCE CODE LINK ── */
+.source-code-banner{background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-left:3px solid var(--blue)}
+.scb-info .scb-title{font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:3px}
+.scb-info .scb-sub{font-size:12px;color:var(--text3)}
+.source-btns{display:flex;gap:8px;flex-shrink:0}
+
+/* ── MISC ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+.divider{height:1px;background:var(--border);margin:20px 0}
+.empty-row{text-align:center;padding:32px;color:var(--text3);font-family:var(--mono);font-size:12px}
+.highlight{background:rgba(204,34,0,0.12);border-radius:2px;padding:0 3px}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-logo"><span>LF</span> LiberiaFront</div>
+  <div class="login-card">
+    <div class="login-title">Admin Access</div>
+    <div class="field"><label>Username</label><input type="text" id="l-user" placeholder="admin" /></div>
+    <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" /></div>
+    <button class="login-btn" onclick="doLogin()">Sign in →</button>
+    <div class="login-err" id="login-err">Invalid credentials. Try admin / admin123</div>
+  </div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">Default: admin / admin123</div>
+</div>
+
+<!-- ── SIDEBAR ── -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">LF</div>
+    <div><div class="sidebar-logo-text">LiberiaFront</div><div class="sidebar-logo-sub">Admin Panel</div></div>
+  </div>
+  <div class="sidebar-section">Overview</div>
+  <div class="nav-item active" onclick="goto('dashboard',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2h6v6H1zm8 0h6v6H9zM1 10h6v4H1zm8 0h6v4H9z"/></svg>Dashboard
+  </div>
+  <div class="sidebar-section">Content</div>
+  <div class="nav-item" onclick="goto('articles',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg>Articles
+    <span class="nav-badge" id="articles-badge">24</span>
+  </div>
+  <div class="nav-item" onclick="goto('sources',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14.5C4.4 14.5 1.5 11.6 1.5 8S4.4 1.5 8 1.5 14.5 4.4 14.5 8 11.6 14.5 8 14.5zM7 4h2v5H7zm0 6h2v2H7z"/></svg>Sources
+  </div>
+  <div class="nav-item" onclick="goto('keywords',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v2H1zm2 4h10v2H3zm2 4h6v2H5z"/></svg>Keywords
+    <span class="nav-badge" id="kw-badge">12</span>
+  </div>
+  <div class="sidebar-section">Audience</div>
+  <div class="nav-item" onclick="goto('users',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 8a5 5 0 0 1 10 0H3z"/></svg>Users
+    <span class="nav-badge" id="users-badge">3</span>
+  </div>
+  <div class="nav-item" onclick="goto('ads',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M0 4h16v8H0zm1 1v6h14V5H1zm2 1h4v4H3zm5 0h4v2H8zm0 3h4v1H8z"/></svg>Ad Slots
+  </div>
+  <div class="sidebar-section">System</div>
+  <div class="nav-item" onclick="goto('analytics',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M0 14h16v1H0zm1-2h2v-3H1zm3 0h2V7H4zm3 0h2V4H7zm3 0h2V1h-2z"/></svg>Analytics
+  </div>
+  <div class="nav-item" onclick="goto('settings',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-1 3a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM6.1 2l-.4 1.4a6 6 0 0 0-1.5.9L2.8 3.7 1.3 6.3l1 1a6 6 0 0 0 0 1.4l-1 1 1.5 2.6 1.4-.6a6 6 0 0 0 1.5.9L6.1 14h3.8l.4-1.4a6 6 0 0 0 1.5-.9l1.4.6 1.5-2.6-1-.9a6 6 0 0 0 0-1.6l1-.9-1.5-2.6-1.4.6a6 6 0 0 0-1.5-.9L9.9 2H6.1z"/></svg>Settings
+  </div>
+  <div class="nav-item" onclick="goto('sourcecode',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M5.7 12.7 1 8l4.7-4.7 1.4 1.4L3.8 8l3.3 3.3-1.4 1.4zm4.6 0-1.4-1.4L12.2 8 8.9 4.7l1.4-1.4L15 8l-4.7 4.7z"/></svg>Source Code
+  </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">AD</div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name">Admin</div><div class="sidebar-user-role">Super Admin</div></div>
+      <button class="logout-btn" onclick="doLogout()" title="Logout">⏻</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-actions">
+      <span class="topbar-time" id="live-clock"></span>
+      <a href="index.html" target="_blank" class="btn btn-sm">View Site ↗</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="section active" id="sec-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card red"><div class="stat-label">Total articles</div><div class="stat-value" id="stat-articles">24</div><div class="stat-delta up">↑ 3 today</div></div>
+        <div class="stat-card green"><div class="stat-label">Registered users</div><div class="stat-value" id="stat-users">3</div><div class="stat-delta up">↑ 1 this week</div></div>
+        <div class="stat-card amber"><div class="stat-label">Active sources</div><div class="stat-value">5</div><div class="stat-delta">All online</div></div>
+        <div class="stat-card blue"><div class="stat-label">Monthly visits</div><div class="stat-value">4.2K</div><div class="stat-delta up">↑ 18% vs last month</div></div>
+        <div class="stat-card red"><div class="stat-label">Ad revenue (mo)</div><div class="stat-value">$340</div><div class="stat-delta up">↑ $90 vs last mo</div></div>
+        <div class="stat-card green"><div class="stat-label">Newsletter subs</div><div class="stat-value">287</div><div class="stat-delta up">↑ 34 this week</div></div>
+        <div class="stat-card amber"><div class="stat-label">Keywords tracked</div><div class="stat-value" id="stat-kw">12</div><div class="stat-delta">Filtering active</div></div>
+        <div class="stat-card blue"><div class="stat-label">Scraper status</div><div class="stat-value" style="font-size:16px;padding-top:4px"><span style="color:var(--green)">● LIVE</span></div><div class="stat-delta">Last run 4m ago</div></div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Traffic by category</span></div>
+          <div class="chart-wrap" id="traffic-chart"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Recent activity</span></div>
+          <div id="activity-feed"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Top articles today</span><button class="btn btn-sm" onclick="goto('articles',null)">View all</button></div>
+        <table><thead><tr><th>Headline</th><th>Source</th><th>Category</th><th>Views</th></tr></thead>
+        <tbody id="top-articles-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ══ ARTICLES ══ -->
+    <div class="section" id="sec-articles">
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-header">
+          <span class="panel-title">All articles (<span id="article-count">24</span>)</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="search" id="article-search" placeholder="Search articles…" oninput="filterArticles()"/>
+            </div>
+            <select id="article-cat-filter" onchange="filterArticles()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);padding:7px 10px;font-size:12px;outline:none">
+              <option value="all">All categories</option>
+              <option value="politics">Politics</option>
+              <option value="business">Business</option>
+              <option value="sports">Sports</option>
+              <option value="health">Health</option>
+              <option value="diaspora">Diaspora</option>
+              <option value="county">Counties</option>
+              <option value="entertainment">Culture</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openAddArticle()">+ Add article</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Headline</th><th>Source</th><th>Category</th><th>Time</th><th>Breaking</th><th>Actions</th></tr></thead>
+          <tbody id="articles-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SOURCES ══ -->
+    <div class="section" id="sec-sources">
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-header"><span class="panel-title">News sources</span><button class="btn btn-primary btn-sm" onclick="openAddSource()">+ Add source</button></div>
+        <div id="sources-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Scraper log</span><button class="btn btn-sm" onclick="toast('Scraper triggered manually','success')">▶ Run now</button></div>
+        <div style="padding:16px 18px;font-family:var(--mono);font-size:11px;color:var(--text3);line-height:1.9">
+          <div><span style="color:var(--green)">[OK]</span> 04:17 — FrontPage Africa — 8 new articles</div>
+          <div><span style="color:var(--green)">[OK]</span> 04:17 — Bush Chicken — 3 new articles</div>
+          <div><span style="color:var(--green)">[OK]</span> 04:17 — New Dawn Liberia — 5 new articles</div>
+          <div><span style="color:var(--amber)">[SKIP]</span> 04:17 — Daily Observer — 0 new (duplicate)</div>
+          <div><span style="color:var(--green)">[OK]</span> 03:47 — FrontPage Africa — 4 new articles</div>
+          <div><span style="color:var(--red2)">[ERR]</span> 03:17 — Liberia News — connection timeout (retrying)</div>
+          <div><span style="color:var(--green)">[OK]</span> 02:47 — All sources — 11 new articles total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ KEYWORDS ══ -->
+    <div class="section" id="sec-keywords">
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-header">
+          <span class="panel-title">Tracked keywords (<span id="kw-count">0</span>)</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddKeyword()">+ Add keyword</button>
+        </div>
+        <div style="padding:12px 18px 4px;font-size:12px;color:var(--text3)">Keywords are used to auto-tag articles, filter content, and trigger breaking news alerts.</div>
+        <div class="tag-list" id="keyword-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Blocked keywords</span><button class="btn btn-sm btn-danger btn-sm" onclick="openAddBlocked()">+ Add blocked</button></div>
+        <div style="padding:12px 18px 4px;font-size:12px;color:var(--text3)">Articles containing these words will be held for review before publishing.</div>
+        <div class="tag-list" id="blocked-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Breaking news triggers</span></div>
+        <div style="padding:12px 18px 4px;font-size:12px;color:var(--text3)">When any article headline contains these words, it is automatically marked as breaking.</div>
+        <div class="tag-list" id="breaking-list"></div>
+      </div>
+    </div>
+
+    <!-- ══ USERS ══ -->
+    <div class="section" id="sec-users">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Admin users (<span id="user-count">0</span>)</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddUser()">+ Add user</button>
+        </div>
+        <table>
+          <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Last login</th><th>Actions</th></tr></thead>
+          <tbody id="users-table"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:20px" class="panel">
+        <div class="panel-header"><span class="panel-title">Newsletter subscribers</span><button class="btn btn-sm" onclick="toast('CSV exported','success')">Export CSV</button></div>
+        <table>
+          <thead><tr><th>Email</th><th>Subscribed</th><th>Source</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="td-mono">kwame.doe@gmail.com</td><td class="td-mono">Apr 10, 2026</td><td>Homepage</td><td><span class="status-pill active"><span class="status-dot"></span>Active</span></td></tr>
+            <tr><td class="td-mono">liberianews@yahoo.com</td><td class="td-mono">Apr 9, 2026</td><td>WhatsApp</td><td><span class="status-pill active"><span class="status-dot"></span>Active</span></td></tr>
+            <tr><td class="td-mono">fatumata.k@hotmail.com</td><td class="td-mono">Apr 7, 2026</td><td>Footer</td><td><span class="status-pill active"><span class="status-dot"></span>Active</span></td></tr>
+            <tr><td class="td-mono">jsmith.mn@gmail.com</td><td class="td-mono">Apr 3, 2026</td><td>Diaspora</td><td><span class="status-pill inactive"><span class="status-dot"></span>Unsubscribed</span></td></tr>
+            <tr><td colspan="4" class="empty-row">287 total subscribers · Page 1 of 15</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ ADS ══ -->
+    <div class="section" id="sec-ads">
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card green"><div class="stat-label">Active slots</div><div class="stat-value">2</div><div class="stat-delta">of 4 slots filled</div></div>
+        <div class="stat-card amber"><div class="stat-label">Monthly revenue</div><div class="stat-value">$340</div><div class="stat-delta up">↑ from $250 last mo</div></div>
+        <div class="stat-card blue"><div class="stat-label">Total impressions</div><div class="stat-value">82K</div><div class="stat-delta">This month</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Ad slots</span><button class="btn btn-primary btn-sm" onclick="openAddAd()">+ Add sponsor</button></div>
+        <table>
+          <thead><tr><th>Sponsor</th><th>Slot</th><th>Rate</th><th>Start</th><th>End</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="ads-table"></tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">AdSense settings</span></div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div><div style="font-size:13px;font-weight:500">Google AdSense enabled</div><div style="font-size:12px;color:var(--text3);font-family:var(--mono)">Auto-placed display ads</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="form-field"><label>Publisher ID (ca-pub-...)</label><input type="text" value="ca-pub-XXXXXXXXXXXXXXXX" class="settings-input" style="width:100%"/></div>
+          <button class="btn btn-sm btn-success" onclick="toast('AdSense settings saved','success')">Save settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS ══ -->
+    <div class="section" id="sec-analytics">
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-label">Page views today</div><div class="stat-value">1,204</div><div class="stat-delta up">↑ 22% vs yesterday</div></div>
+        <div class="stat-card green"><div class="stat-label">Unique visitors</div><div class="stat-value">873</div><div class="stat-delta up">↑ 15%</div></div>
+        <div class="stat-card amber"><div class="stat-label">Avg. session</div><div class="stat-value">3m 41s</div><div class="stat-delta">Good retention</div></div>
+        <div class="stat-card red"><div class="stat-label">Bounce rate</div><div class="stat-value">38%</div><div class="stat-delta up">↓ improving</div></div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Top traffic sources</span></div>
+          <div class="chart-wrap">
+            <div class="chart-row"><span class="chart-label">WhatsApp</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:72%;background:var(--green)"></div></div><span class="chart-val">3,018</span></div>
+            <div class="chart-row"><span class="chart-label">Direct</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:48%;background:var(--blue)"></div></div><span class="chart-val">2,014</span></div>
+            <div class="chart-row"><span class="chart-label">Facebook</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:38%;background:var(--amber)"></div></div><span class="chart-val">1,594</span></div>
+            <div class="chart-row"><span class="chart-label">Google</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:25%;background:var(--red)"></div></div><span class="chart-val">1,047</span></div>
+            <div class="chart-row"><span class="chart-label">Other</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:12%;background:var(--text3)"></div></div><span class="chart-val">503</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Audience location</span></div>
+          <div class="chart-wrap">
+            <div class="chart-row"><span class="chart-label">Monrovia, LR</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:55%;background:var(--red)"></div></div><span class="chart-val">52%</span></div>
+            <div class="chart-row"><span class="chart-label">Minnesota, US</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:22%;background:var(--blue)"></div></div><span class="chart-val">21%</span></div>
+            <div class="chart-row"><span class="chart-label">Other US</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:14%;background:var(--amber)"></div></div><span class="chart-val">13%</span></div>
+            <div class="chart-row"><span class="chart-label">Ghana / Nigeria</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:8%;background:var(--green)"></div></div><span class="chart-val">8%</span></div>
+            <div class="chart-row"><span class="chart-label">UK / Europe</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:6%;background:var(--text3)"></div></div><span class="chart-val">6%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">Most read categories (this month)</span></div>
+        <div class="chart-wrap">
+          <div class="chart-row"><span class="chart-label">Politics</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:80%;background:var(--red)"></div></div><span class="chart-val">8,240</span></div>
+          <div class="chart-row"><span class="chart-label">Sports</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:60%;background:var(--amber)"></div></div><span class="chart-val">6,180</span></div>
+          <div class="chart-row"><span class="chart-label">Business</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:45%;background:var(--blue)"></div></div><span class="chart-val">4,630</span></div>
+          <div class="chart-row"><span class="chart-label">Diaspora</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:35%;background:var(--green)"></div></div><span class="chart-val">3,600</span></div>
+          <div class="chart-row"><span class="chart-label">Health</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:20%;background:var(--text3)"></div></div><span class="chart-val">2,060</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="section" id="sec-settings">
+      <div class="settings-group">
+        <div class="settings-group-title">Site identity</div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Site name</div><div class="settings-row-sub">Shown in browser tab and header</div></div><input class="settings-input" value="LiberiaFront"/></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Tagline</div><div class="settings-row-sub">Under the masthead</div></div><input class="settings-input" value="All of Liberia. One feed."/></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Contact email</div><div class="settings-row-sub">For sponsor inquiries</div></div><input class="settings-input" value="ads@liberiafront.com"/></div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">Scraper settings</div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Scrape interval</div><div class="settings-row-sub">How often to check for new articles</div></div>
+          <select class="settings-input" style="width:160px"><option>Every 30 minutes</option><option>Every 15 minutes</option><option>Every hour</option></select>
+        </div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Max articles per source</div><div class="settings-row-sub">Per scrape run</div></div><input class="settings-input" type="number" value="10" style="width:100px"/></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Auto-publish new articles</div><div class="settings-row-sub">Skip manual review queue</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">Notifications</div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Push notifications</div><div class="settings-row-sub">Send breaking news to subscribers</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Daily digest email</div><div class="settings-row-sub">Send newsletter every morning at 7am</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-label">Admin alert email</div><div class="settings-row-sub">Notify admin when scraper fails</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn btn-primary" onclick="toast('Settings saved successfully','success')">Save all settings</button>
+        <button class="btn" onclick="toast('Settings reset to defaults','success')">Reset to defaults</button>
+      </div>
+    </div>
+
+    <!-- ══ SOURCE CODE ══ -->
+    <div class="section" id="sec-sourcecode">
+      <div class="source-code-banner">
+        <div class="scb-info">
+          <div class="scb-title">LiberiaFront PWA — Full source code</div>
+          <div class="scb-sub">7 files · HTML + CSS + JS · No framework required · Deploy to Netlify in 2 minutes</div>
+        </div>
+        <div class="source-btns">
+          <a href="index.html" target="_blank" class="btn btn-sm">View site ↗</a>
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Project files</span></div>
+            <div id="file-tree"></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Deployment guide</span></div>
+            <div style="padding:16px 18px;font-family:var(--mono);font-size:12px;line-height:2;color:var(--text2)">
+              <div style="color:var(--text3);margin-bottom:8px"># Deploy to Netlify (free)</div>
+              <div><span style="color:var(--green)">1.</span> Download the ZIP file</div>
+              <div><span style="color:var(--green)">2.</span> Go to netlify.com → sign up free</div>
+              <div><span style="color:var(--green)">3.</span> Drag the folder into the deploy zone</div>
+              <div><span style="color:var(--green)">4.</span> Site is live instantly</div>
+              <div><span style="color:var(--green)">5.</span> Add custom domain in Settings</div>
+              <div style="margin-top:12px;color:var(--text3)"># Connect live RSS scraper</div>
+              <div><span style="color:var(--amber)">→</span> See README.md for full guide</div>
+              <div><span style="color:var(--amber)">→</span> Requires Railway ($5/mo) + Supabase</div>
+              <div style="margin-top:12px;color:var(--text3)"># Running cost</div>
+              <div><span style="color:var(--blue)">~$6/month</span> total to operate</div>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:14px">
+            <div class="panel-header"><span class="panel-title">Tech stack</span></div>
+            <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding-bottom:8px;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Frontend</span><span class="td-mono">HTML + CSS + Vanilla JS</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding-bottom:8px;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Fonts</span><span class="td-mono">Playfair + Source Serif</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding-bottom:8px;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">PWA</span><span class="td-mono">Service Worker + Manifest</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding-bottom:8px;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Hosting</span><span class="td-mono">Netlify (free)</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding-bottom:8px;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Database</span><span class="td-mono">Supabase (free tier)</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Scraper</span><span class="td-mono">Node.js on Railway</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══ MODALS ══ -->
+<div class="modal-bg" id="modal-add-article">
+  <div class="modal-box">
+    <div class="modal-title">Add article <button class="modal-close" onclick="closeModal('modal-add-article')">×</button></div>
+    <div class="form-grid full" style="gap:12px">
+      <div class="form-field"><label>Headline</label><input type="text" id="new-headline" placeholder="Enter headline…"/></div>
+      <div class="form-field"><label>Excerpt</label><textarea id="new-excerpt" placeholder="Short summary…"></textarea></div>
+      <div class="form-grid">
+        <div class="form-field"><label>Source name</label><input type="text" id="new-source" placeholder="FrontPage Africa"/></div>
+        <div class="form-field"><label>Source URL</label><input type="url" id="new-sourceurl" placeholder="https://…"/></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Category</label>
+          <select id="new-cat"><option value="politics">Politics</option><option value="business">Business</option><option value="sports">Sports</option><option value="health">Health</option><option value="diaspora">Diaspora</option><option value="county">Counties</option><option value="entertainment">Culture</option></select>
+        </div>
+        <div class="form-field"><label>Image URL</label><input type="url" id="new-image" placeholder="https://…/image.jpg"/></div>
+      </div>
+      <div class="form-field" style="flex-direction:row;align-items:center;gap:10px">
+        <label class="toggle"><input type="checkbox" id="new-breaking"><span class="toggle-slider"></span></label>
+        <span style="font-size:13px">Mark as breaking news</span>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveArticle()">Publish article</button>
+      <button class="btn" onclick="closeModal('modal-add-article')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-user">
+  <div class="modal-box">
+    <div class="modal-title">Add admin user <button class="modal-close" onclick="closeModal('modal-add-user')">×</button></div>
+    <div class="form-grid full" style="gap:12px">
+      <div class="form-grid">
+        <div class="form-field"><label>Full name</label><input type="text" id="new-uname" placeholder="James Kollie"/></div>
+        <div class="form-field"><label>Username</label><input type="text" id="new-uuser" placeholder="jameskollie"/></div>
+      </div>
+      <div class="form-field"><label>Email</label><input type="email" id="new-uemail" placeholder="james@liberiafront.com"/></div>
+      <div class="form-grid">
+        <div class="form-field"><label>Password</label><input type="password" id="new-upass" placeholder="Min 8 characters"/></div>
+        <div class="form-field"><label>Role</label>
+          <select id="new-urole"><option value="editor">Editor</option><option value="admin">Admin</option><option value="viewer">Viewer (read-only)</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveUser()">Create user</button>
+      <button class="btn" onclick="closeModal('modal-add-user')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-keyword">
+  <div class="modal-box">
+    <div class="modal-title">Add keyword <button class="modal-close" onclick="closeModal('modal-add-keyword')">×</button></div>
+    <div class="form-grid full" style="gap:12px">
+      <div class="form-field"><label>Keyword or phrase</label><input type="text" id="new-kw" placeholder="e.g. President Boakai, Lone Star, ArcelorMittal…"/></div>
+      <div class="form-field"><label>Category tag</label>
+        <select id="new-kw-cat"><option value="politics">Politics</option><option value="business">Business</option><option value="sports">Sports</option><option value="health">Health</option><option value="diaspora">Diaspora</option><option value="county">Counties</option><option value="entertainment">Culture</option><option value="general">General</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveKeyword()">Add keyword</button>
+      <button class="btn" onclick="closeModal('modal-add-keyword')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-source">
+  <div class="modal-box">
+    <div class="modal-title">Add news source <button class="modal-close" onclick="closeModal('modal-add-source')">×</button></div>
+    <div class="form-grid full" style="gap:12px">
+      <div class="form-field"><label>Source name</label><input type="text" id="new-sname" placeholder="FrontPage Africa"/></div>
+      <div class="form-field"><label>Website URL</label><input type="url" id="new-surl" placeholder="https://frontpageafricaonline.com"/></div>
+      <div class="form-field"><label>RSS Feed URL</label><input type="url" id="new-sfeed" placeholder="https://frontpageafricaonline.com/feed/"/></div>
+      <div class="form-field"><label>Default category</label>
+        <select id="new-scat"><option value="politics">Politics</option><option value="business">Business</option><option value="sports">Sports</option><option value="general">General (auto-detect)</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveSource()">Add source</button>
+      <button class="btn" onclick="closeModal('modal-add-source')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-ad">
+  <div class="modal-box">
+    <div class="modal-title">Add sponsor <button class="modal-close" onclick="closeModal('modal-add-ad')">×</button></div>
+    <div class="form-grid full" style="gap:12px">
+      <div class="form-grid">
+        <div class="form-field"><label>Sponsor name</label><input type="text" id="new-adname" placeholder="MTN Liberia"/></div>
+        <div class="form-field"><label>Monthly rate (USD)</label><input type="number" id="new-adrate" placeholder="400"/></div>
+      </div>
+      <div class="form-field"><label>Ad slot</label>
+        <select id="new-adslot"><option>Homepage banner</option><option>Category page top</option><option>Newsletter sponsor</option><option>Breaking ticker</option></select>
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Start date</label><input type="date" id="new-adstart"/></div>
+        <div class="form-field"><label>End date</label><input type="date" id="new-adend"/></div>
+      </div>
+      <div class="form-field"><label>Ad image URL</label><input type="url" id="new-adimg" placeholder="https://…"/></div>
+      <div class="form-field"><label>Click-through URL</label><input type="url" id="new-adlink" placeholder="https://mtn.com.lr"/></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveAd()">Create ad slot</button>
+      <button class="btn" onclick="closeModal('modal-add-ad')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-blocked">
+  <div class="modal-box">
+    <div class="modal-title">Add blocked keyword <button class="modal-close" onclick="closeModal('modal-add-blocked')">×</button></div>
+    <div class="form-field"><label>Keyword or phrase to block</label><input type="text" id="new-blocked" placeholder="e.g. spam, adult content keyword…"/></div>
+    <div class="form-actions" style="margin-top:14px">
+      <button class="btn btn-danger" onclick="saveBlocked()">Block keyword</button>
+      <button class="btn" onclick="closeModal('modal-add-blocked')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-msg"></span></div>
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const STATE = {
+  users: [
+    {id:1, name:'Admin', username:'admin', email:'admin@liberiafront.com', role:'Super Admin', status:'active', lastLogin:'Just now'},
+    {id:2, name:'Mary Konneh', username:'mkonneh', email:'mary@liberiafront.com', role:'Editor', status:'active', lastLogin:'Apr 13, 2026'},
+    {id:3, name:'James Tarr', username:'jtarr', email:'james@liberiafront.com', role:'Viewer', status:'inactive', lastLogin:'Apr 2, 2026'},
+  ],
+  articles: [],
+  keywords: [
+    {text:'President Boakai', cat:'politics'},{text:'Lone Star',cat:'sports'},
+    {text:'ArcelorMittal',cat:'business'},{text:'MTN Liberia',cat:'business'},
+    {text:'WAEC',cat:'education'},{text:'Monrovia',cat:'general'},
+    {text:'ECOWAS',cat:'politics'},{text:'LFA',cat:'sports'},
+    {text:'Orange Money',cat:'business'},{text:'Ministry of Health',cat:'health'},
+    {text:'Nimba County',cat:'county'},{text:'diaspora',cat:'diaspora'},
+  ],
+  blockedKeywords: ['spam','clickbait','advertisement'],
+  breakingTriggers: ['breaking','urgent','just in','developing'],
+  sources: [
+    {name:'FrontPage Africa', url:'https://frontpageafricaonline.com', feed:'https://frontpageafricaonline.com/feed/', cat:'politics', enabled:true, articles:48},
+    {name:'Bush Chicken', url:'https://www.bushchicken.com', feed:'https://www.bushchicken.com/feed/', cat:'politics', enabled:true, articles:31},
+    {name:'New Dawn Liberia', url:'https://thenewdawnliberia.com', feed:'https://thenewdawnliberia.com/feed/', cat:'general', enabled:true, articles:27},
+    {name:'Daily Observer', url:'https://liberianobserver.com', feed:'https://liberianobserver.com/feed/', cat:'general', enabled:true, articles:19},
+    {name:'Liberia News', url:'https://liberianews.net', feed:'https://liberianews.net/feed/', cat:'general', enabled:false, articles:5},
+  ],
+  ads: [
+    {sponsor:'MTN Liberia', slot:'Homepage banner', rate:'$400', start:'Apr 1', end:'Jun 30', status:'active'},
+    {sponsor:'Ecobank LR', slot:'Newsletter sponsor', rate:'$200', start:'Apr 10', end:'May 10', status:'active'},
+    {sponsor:'[Open slot]', slot:'Category page top', rate:'—', start:'—', end:'—', status:'available'},
+    {sponsor:'[Open slot]', slot:'Breaking ticker', rate:'—', start:'—', end:'—', status:'available'},
+  ],
+  nextUserId: 4,
+  nextArticleId: 100,
+};
+
+// Import seed articles
+if (typeof ARTICLES !== 'undefined') STATE.articles = [...ARTICLES];
+
+const CAT_COLORS = {politics:'#cc2200',business:'#3b8ef0',sports:'#f0a000',health:'#00c06a',diaspora:'#a855f7',county:'#06b6d4',entertainment:'#ec4899',general:'#888',education:'#888'};
+const AV_COLORS = ['#cc2200','#3b8ef0','#f0a000','#00c06a','#a855f7','#06b6d4'];
+
+// ══════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  if((u==='admin'&&p==='admin123')||(u==='mkonneh'&&p==='editor123')){
+    document.getElementById('login-screen').classList.add('hidden');
+    initDashboard();
+  } else {
+    document.getElementById('login-err').style.display='block';
+  }
+}
+function doLogout(){
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('l-pass').value='';
+  document.getElementById('login-err').style.display='none';
+}
+document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function goto(id, el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
+  const titles={dashboard:'Dashboard',articles:'Articles',sources:'News Sources',keywords:'Keywords',users:'Users',ads:'Ad Slots',analytics:'Analytics',settings:'Settings',sourcecode:'Source Code'};
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+  if(id==='articles')renderArticlesTable(STATE.articles);
+  if(id==='users')renderUsersTable();
+  if(id==='keywords')renderKeywords();
+  if(id==='sources')renderSources();
+  if(id==='ads')renderAds();
+  if(id==='sourcecode')renderSourceCode();
+}
+
+// ══════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════
+function updateClock(){
+  document.getElementById('live-clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock,1000); updateClock();
+
+// ══════════════════════════════════════
+// INIT DASHBOARD
+// ══════════════════════════════════════
+function initDashboard(){
+  updateBadges();
+  renderTrafficChart();
+  renderActivityFeed();
+  renderTopArticles();
+}
+
+function updateBadges(){
+  document.getElementById('stat-articles').textContent=STATE.articles.length;
+  document.getElementById('stat-users').textContent=STATE.users.length;
+  document.getElementById('stat-kw').textContent=STATE.keywords.length;
+  document.getElementById('articles-badge').textContent=STATE.articles.length;
+  document.getElementById('kw-badge').textContent=STATE.keywords.length;
+  document.getElementById('users-badge').textContent=STATE.users.length;
+  document.getElementById('kw-count').textContent=STATE.keywords.length;
+  document.getElementById('user-count').textContent=STATE.users.length;
+  document.getElementById('article-count').textContent=STATE.articles.length;
+}
+
+function renderTrafficChart(){
+  const cats=[{l:'Politics',v:80,c:'var(--red)'},{l:'Sports',v:60,c:'var(--amber)'},{l:'Business',v:45,c:'var(--blue)'},{l:'Diaspora',v:35,c:'#a855f7'},{l:'Health',v:20,c:'var(--green)'},{l:'Counties',v:15,c:'#06b6d4'}];
+  document.getElementById('traffic-chart').innerHTML=cats.map(c=>`<div class="chart-row"><span class="chart-label">${c.l}</span><div class="chart-bar-wrap"><div class="chart-bar" style="width:${c.v}%;background:${c.c}"></div></div><span class="chart-val">${c.v}%</span></div>`).join('');
+}
+
+function renderActivityFeed(){
+  const acts=[
+    {icon:'📰',bg:'rgba(204,34,0,0.15)',text:'<strong>3 new articles</strong> scraped from FrontPage Africa',time:'4 minutes ago'},
+    {icon:'👤',bg:'rgba(0,192,106,0.15)',text:'New user <strong>James Tarr</strong> registered',time:'2 hours ago'},
+    {icon:'🔑',bg:'rgba(240,160,0,0.15)',text:'Keyword <strong>"ECOWAS"</strong> triggered 2 auto-tags',time:'3 hours ago'},
+    {icon:'💰',bg:'rgba(59,142,240,0.15)',text:'Ad slot payment received from <strong>MTN Liberia</strong>',time:'Yesterday'},
+    {icon:'🔴',bg:'rgba(204,34,0,0.15)',text:'Breaking news alert sent to <strong>287 subscribers</strong>',time:'Yesterday'},
+    {icon:'⚙️',bg:'rgba(136,136,136,0.15)',text:'Scraper error on <strong>Liberia News</strong> — retried OK',time:'2 days ago'},
+  ];
+  document.getElementById('activity-feed').innerHTML=acts.map(a=>`<div class="activity-item"><div class="activity-icon" style="background:${a.bg}">${a.icon}</div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time}</div></div></div>`).join('');
+}
+
+function renderTopArticles(){
+  const top=STATE.articles.slice(0,5);
+  const views=[4820,3910,3240,2870,2100];
+  document.getElementById('top-articles-table').innerHTML=top.map((a,i)=>`<tr><td style="max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.headline}</td><td class="td-mono" style="font-size:11px">${a.source}</td><td><span style="font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:3px;background:${CAT_COLORS[a.category]||'#555'}22;color:${CAT_COLORS[a.category]||'#888'};border:1px solid ${CAT_COLORS[a.category]||'#555'}44">${a.category}</span></td><td class="td-mono">${views[i].toLocaleString()}</td></tr>`).join('');
+}
+
+// ══════════════════════════════════════
+// ARTICLES
+// ══════════════════════════════════════
+function renderArticlesTable(articles){
+  const tbody=document.getElementById('articles-table');
+  if(!articles.length){tbody.innerHTML=`<tr><td colspan="6" class="empty-row">No articles found</td></tr>`;return;}
+  tbody.innerHTML=articles.map(a=>`<tr>
+    <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px">${a.headline}</td>
+    <td class="td-mono" style="font-size:11px;white-space:nowrap">${a.source}</td>
+    <td><span style="font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:3px;background:${CAT_COLORS[a.category]||'#555'}22;color:${CAT_COLORS[a.category]||'#888'}">${a.category}</span></td>
+    <td class="td-mono" style="font-size:11px;white-space:nowrap">${a.time}</td>
+    <td style="text-align:center">${a.breaking?'<span style="color:var(--red2);font-family:var(--mono);font-size:10px">● LIVE</span>':'<span style="color:var(--text3);font-family:var(--mono);font-size:10px">—</span>'}</td>
+    <td><div class="td-actions">
+      <a href="${a.sourceUrl}" target="_blank" class="icon-btn" title="View source">↗</a>
+      <button class="icon-btn danger" onclick="deleteArticle(${a.id})" title="Delete">✕</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function filterArticles(){
+  const q=document.getElementById('article-search').value.toLowerCase();
+  const cat=document.getElementById('article-cat-filter').value;
+  const filtered=STATE.articles.filter(a=>{
+    const matchQ=!q||a.headline.toLowerCase().includes(q)||a.source.toLowerCase().includes(q);
+    const matchCat=cat==='all'||a.category===cat;
+    return matchQ&&matchCat;
+  });
+  renderArticlesTable(filtered);
+  document.getElementById('article-count').textContent=filtered.length;
+}
+
+function deleteArticle(id){
+  if(!confirm('Delete this article?'))return;
+  STATE.articles=STATE.articles.filter(a=>a.id!==id);
+  renderArticlesTable(STATE.articles);
+  document.getElementById('article-count').textContent=STATE.articles.length;
+  updateBadges();
+  toast('Article deleted','success');
+}
+
+function openAddArticle(){openModal('modal-add-article');}
+
+function saveArticle(){
+  const h=document.getElementById('new-headline').value.trim();
+  if(!h){toast('Headline is required','error');return;}
+  const a={
+    id: STATE.nextArticleId++,
+    headline:h,
+    excerpt:document.getElementById('new-excerpt').value.trim()||'No excerpt.',
+    source:document.getElementById('new-source').value.trim()||'LiberiaFront',
+    sourceUrl:document.getElementById('new-sourceurl').value.trim()||'#',
+    category:document.getElementById('new-cat').value,
+    image:document.getElementById('new-image').value.trim()||'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800&q=80',
+    time:'Just now',
+    timeMs:Date.now(),
+    breaking:document.getElementById('new-breaking').checked,
+  };
+  STATE.articles.unshift(a);
+  closeModal('modal-add-article');
+  document.querySelectorAll('#modal-add-article input,#modal-add-article textarea').forEach(el=>el.value='');
+  document.getElementById('new-breaking').checked=false;
+  renderArticlesTable(STATE.articles);
+  updateBadges();
+  toast('Article published successfully','success');
+}
+
+// ══════════════════════════════════════
+// USERS
+// ══════════════════════════════════════
+function renderUsersTable(){
+  document.getElementById('user-count').textContent=STATE.users.length;
+  document.getElementById('users-badge').textContent=STATE.users.length;
+  document.getElementById('users-table').innerHTML=STATE.users.map((u,i)=>`<tr>
+    <td><div class="avatar-cell"><div class="av" style="background:${AV_COLORS[i%AV_COLORS.length]}">${u.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>${u.name}</div></td>
+    <td class="td-mono" style="font-size:11px">${u.email}</td>
+    <td><span style="font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:3px;background:var(--surface3);color:var(--text2)">${u.role}</span></td>
+    <td><span class="status-pill ${u.status}"><span class="status-dot"></span>${u.status}</span></td>
+    <td class="td-mono" style="font-size:11px">${u.lastLogin}</td>
+    <td><div class="td-actions">
+      ${u.id!==1?`<button class="icon-btn danger" onclick="deleteUser(${u.id})" title="Remove">✕</button>`:'<span style="font-size:11px;color:var(--text3);font-family:var(--mono)">owner</span>'}
+    </div></td>
+  </tr>`).join('');
+}
+
+function deleteUser(id){
+  if(!confirm('Remove this user?'))return;
+  STATE.users=STATE.users.filter(u=>u.id!==id);
+  renderUsersTable();
+  updateBadges();
+  toast('User removed','success');
+}
+
+function openAddUser(){openModal('modal-add-user');}
+
+function saveUser(){
+  const name=document.getElementById('new-uname').value.trim();
+  const username=document.getElementById('new-uuser').value.trim();
+  const email=document.getElementById('new-uemail').value.trim();
+  if(!name||!email){toast('Name and email are required','error');return;}
+  STATE.users.push({id:STATE.nextUserId++,name,username:username||name.toLowerCase().replace(/\s/g,''),email,role:document.getElementById('new-urole').value==='admin'?'Admin':document.getElementById('new-urole').value==='viewer'?'Viewer':'Editor',status:'active',lastLogin:'Never'});
+  closeModal('modal-add-user');
+  ['new-uname','new-uuser','new-uemail','new-upass'].forEach(id=>document.getElementById(id).value='');
+  renderUsersTable();
+  updateBadges();
+  toast('User created successfully','success');
+}
+
+// ══════════════════════════════════════
+// KEYWORDS
+// ══════════════════════════════════════
+function renderKeywords(){
+  document.getElementById('kw-count').textContent=STATE.keywords.length;
+  document.getElementById('keyword-list').innerHTML=STATE.keywords.map((k,i)=>`<span class="kw-tag"><span class="cat-dot" style="background:${CAT_COLORS[k.cat]||'#888'}"></span>${k.text}<button class="remove-tag" onclick="removeKeyword(${i})">×</button></span>`).join('');
+  document.getElementById('blocked-list').innerHTML=STATE.blockedKeywords.map((k,i)=>`<span class="kw-tag" style="border-color:rgba(204,34,0,0.3)"><span class="cat-dot" style="background:var(--red2)"></span>${k}<button class="remove-tag" onclick="removeBlocked(${i})">×</button></span>`).join('');
+  document.getElementById('breaking-list').innerHTML=STATE.breakingTriggers.map((k,i)=>`<span class="kw-tag" style="border-color:rgba(240,160,0,0.3)"><span class="cat-dot" style="background:var(--amber)"></span>${k}<button class="remove-tag" onclick="removeBreaking(${i})">×</button></span>`).join('');
+}
+
+function openAddKeyword(){openModal('modal-add-keyword');}
+function openAddBlocked(){openModal('modal-add-blocked');}
+
+function saveKeyword(){
+  const kw=document.getElementById('new-kw').value.trim();
+  if(!kw){toast('Enter a keyword','error');return;}
+  STATE.keywords.push({text:kw,cat:document.getElementById('new-kw-cat').value});
+  document.getElementById('new-kw').value='';
+  closeModal('modal-add-keyword');
+  renderKeywords();
+  updateBadges();
+  toast('Keyword added','success');
+}
+
+function saveBlocked(){
+  const kw=document.getElementById('new-blocked').value.trim();
+  if(!kw)return;
+  STATE.blockedKeywords.push(kw);
+  document.getElementById('new-blocked').value='';
+  closeModal('modal-add-blocked');
+  renderKeywords();
+  toast('Keyword blocked','success');
+}
+
+function removeKeyword(i){STATE.keywords.splice(i,1);renderKeywords();updateBadges();toast('Keyword removed','success');}
+function removeBlocked(i){STATE.blockedKeywords.splice(i,1);renderKeywords();toast('Unblocked','success');}
+function removeBreaking(i){STATE.breakingTriggers.splice(i,1);renderKeywords();toast('Trigger removed','success');}
+
+// ══════════════════════════════════════
+// SOURCES
+// ══════════════════════════════════════
+function renderSources(){
+  document.getElementById('sources-list').innerHTML=STATE.sources.map((s,i)=>`<div class="source-row">
+    <div class="source-dot" style="background:${s.enabled?'var(--green)':'var(--text3)'}"></div>
+    <div class="source-info"><div class="source-name">${s.name}</div><div class="source-url"><a href="${s.url}" target="_blank" style="color:var(--blue)">${s.feed}</a></div></div>
+    <div class="source-stats">${s.articles} articles<br/><span style="color:var(--text3)">${s.cat}</span></div>
+    <label class="toggle"><input type="checkbox" ${s.enabled?'checked':''} onchange="toggleSource(${i})"><span class="toggle-slider"></span></label>
+    <button class="icon-btn danger" onclick="deleteSource(${i})">✕</button>
+  </div>`).join('');
+}
+
+function toggleSource(i){STATE.sources[i].enabled=!STATE.sources[i].enabled;renderSources();toast(`Source ${STATE.sources[i].enabled?'enabled':'disabled'}`,'success');}
+function deleteSource(i){if(!confirm('Remove this source?'))return;STATE.sources.splice(i,1);renderSources();toast('Source removed','success');}
+function openAddSource(){openModal('modal-add-source');}
+function saveSource(){
+  const name=document.getElementById('new-sname').value.trim();
+  if(!name){toast('Name required','error');return;}
+  STATE.sources.push({name,url:document.getElementById('new-surl').value.trim(),feed:document.getElementById('new-sfeed').value.trim(),cat:document.getElementById('new-scat').value,enabled:true,articles:0});
+  ['new-sname','new-surl','new-sfeed'].forEach(id=>document.getElementById(id).value='');
+  closeModal('modal-add-source');
+  renderSources();
+  toast('Source added','success');
+}
+
+// ══════════════════════════════════════
+// ADS
+// ══════════════════════════════════════
+function renderAds(){
+  document.getElementById('ads-table').innerHTML=STATE.ads.map((a,i)=>`<tr>
+    <td style="font-weight:500">${a.sponsor}</td>
+    <td class="td-mono" style="font-size:11px">${a.slot}</td>
+    <td class="td-mono" style="font-size:12px;color:var(--green)">${a.rate}</td>
+    <td class="td-mono" style="font-size:11px">${a.start}</td>
+    <td class="td-mono" style="font-size:11px">${a.end}</td>
+    <td><span class="status-pill ${a.status==='active'?'active':'inactive'}"><span class="status-dot"></span>${a.status}</span></td>
+    <td><div class="td-actions"><button class="icon-btn danger" onclick="deleteAd(${i})">✕</button></div></td>
+  </tr>`).join('');
+}
+function openAddAd(){openModal('modal-add-ad');}
+function saveAd(){
+  const name=document.getElementById('new-adname').value.trim();
+  if(!name){toast('Sponsor name required','error');return;}
+  STATE.ads.unshift({sponsor:name,slot:document.getElementById('new-adslot').value,rate:'$'+document.getElementById('new-adrate').value,start:document.getElementById('new-adstart').value||'—',end:document.getElementById('new-adend').value||'—',status:'active'});
+  closeModal('modal-add-ad');
+  renderAds();
+  toast('Ad slot created','success');
+}
+function deleteAd(i){if(!confirm('Remove this ad slot?'))return;STATE.ads.splice(i,1);renderAds();toast('Ad removed','success');}
+
+// ══════════════════════════════════════
+// SOURCE CODE
+// ══════════════════════════════════════
+const FILES=[
+  {name:'index.html',desc:'App shell — masthead, categories, hero, feed, footer, modals',size:'6.2 KB',type:'html'},
+  {name:'src/style.css',desc:'All styles — newspaper aesthetic, dark mode, PWA UI',size:'8.4 KB',type:'css'},
+  {name:'src/app.js',desc:'Feed render, search, filtering, install banner, service worker registration',size:'5.1 KB',type:'js'},
+  {name:'src/data/articles.js',desc:'24 seed articles — replace with live API for production',size:'9.8 KB',type:'js'},
+  {name:'sw.js',desc:'Service Worker — offline caching, push notifications, background sync',size:'2.6 KB',type:'js'},
+  {name:'manifest.json',desc:'PWA manifest — icons, shortcuts, display mode, theme color',size:'1.2 KB',type:'json'},
+  {name:'admin.html',desc:'This admin dashboard — full CMS with users, keywords, analytics',size:'28 KB',type:'html'},
+  {name:'README.md',desc:'Deployment guide, RSS scraper code, Supabase schema, revenue model',size:'4.3 KB',type:'md'},
+];
+const TYPE_COLORS={html:'var(--red)',css:'var(--blue)',js:'var(--amber)',json:'var(--green)',md:'var(--text2)'};
+
+function renderSourceCode(){
+  document.getElementById('file-tree').innerHTML=FILES.map(f=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border)">
+    <span style="font-family:var(--mono);font-size:10px;font-weight:600;background:${TYPE_COLORS[f.type]||'#888'}22;color:${TYPE_COLORS[f.type]||'#888'};border:1px solid ${TYPE_COLORS[f.type]||'#888'}44;padding:2px 7px;border-radius:2px;flex-shrink:0">${f.type.toUpperCase()}</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-family:var(--mono);font-size:12px;font-weight:500">${f.name}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:1px">${f.desc}</div>
+    </div>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--text3);flex-shrink:0">${f.size}</span>
+    <a href="${f.name}" download class="btn btn-sm" style="flex-shrink:0">↓</a>
+  </div>`).join('');
+}
+
+// ══════════════════════════════════════
+// MODAL HELPERS
+// ══════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+let toastTimer;
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.className=`toast ${type}`;
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// Enter to login
+document.getElementById('l-user').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('l-pass').focus();});
+</script>
+</body>
+</html>

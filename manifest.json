@@ -1,0 +1,49 @@
+{
+  "name": "LiberiaFront — Liberia's News Hub",
+  "short_name": "LiberiaFront",
+  "description": "All of Liberia's news in one fast, mobile-friendly feed. FrontPage Africa, Daily Observer, Bush Chicken & more.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "lang": "en",
+  "categories": ["news"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='20' fill='%23B91C1C'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-size='96' fill='white' font-family='Georgia,serif' font-weight='bold'>LF</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='48' fill='%23B91C1C'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-size='256' fill='white' font-family='Georgia,serif' font-weight='bold'>LF</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Politics",
+      "short_name": "Politics",
+      "description": "Latest Liberian political news",
+      "url": "/?cat=politics"
+    },
+    {
+      "name": "Sports",
+      "short_name": "Sports",
+      "description": "Lone Star & LFA updates",
+      "url": "/?cat=sports"
+    },
+    {
+      "name": "Diaspora",
+      "short_name": "Diaspora",
+      "description": "News for Liberians abroad",
+      "url": "/?cat=diaspora"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
